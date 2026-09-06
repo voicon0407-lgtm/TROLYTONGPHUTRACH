@@ -1,0 +1,11 @@
+{
+  "profile_version": 2,
+  "app_id": "vn.giaoducso40.tpt.thcs.thcs",
+  "school_profile_id": "thcs-thcs-profile-001",
+  "school_name": "THCS NGUYỄN THỊ ĐỊNH",
+  "school_code": "",
+  "logo": null,
+  "contains_real_data": false,
+  "sample_data": false,
+  "note": "Định danh phát hành. Dữ liệu học sinh, lớp, hồ sơ và bản sao lưu chỉ được nhập trên thiết bị, không ghi vào source."
+}

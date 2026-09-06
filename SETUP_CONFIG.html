@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <meta name="theme-color" content="#0b6bcb" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Tạo cấu hình giáo viên – Trợ lý TPT Đội</title>
+    <style>
+      :root{--blue:#0b6bcb;--ink:#172235;--muted:#667085;--line:#dce4ec;--bg:#f4f7fa;--red:#b42318}
+      *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
+      main{width:min(960px,100%);margin:auto;padding:18px}.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:0 8px 28px rgba(23,34,53,.08)}
+      h1{font-size:24px;color:#0a3764;margin:0 0 5px}h2{font-size:17px;margin:20px 0 8px}.muted{color:var(--muted)}
+      .notice{padding:10px;border:1px solid #f0d27b;background:#fff8e6;border-radius:8px;color:#715500;margin:12px 0}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.full{grid-column:1/-1}
+      label{display:block;font-weight:700;margin-bottom:4px}input{width:100%;min-height:42px;border:1px solid #cbd7e3;border-radius:8px;padding:8px 10px;font:inherit}input:focus{outline:3px solid rgba(11,107,203,.25);border-color:var(--blue)}
+      button{min-height:44px;border:1px solid var(--blue);border-radius:8px;background:var(--blue);color:#fff;padding:8px 14px;font:inherit;font-weight:750;cursor:pointer}button.secondary{background:#fff;color:var(--blue)}button:disabled{opacity:.55;cursor:not-allowed}
+      .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}pre{max-height:390px;overflow:auto;padding:12px;border-radius:8px;background:#0d1b2a;color:#dcecff;white-space:pre-wrap;overflow-wrap:anywhere}.error{color:var(--red);font-weight:700;min-height:22px}
+      footer{text-align:center;color:#60788f;font-size:11px;padding:14px 4px 4px}@media(max-width:640px){main{padding:8px}.card{padding:13px}.grid{grid-template-columns:1fr}.full{grid-column:auto}input{font-size:16px}}
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="card">
+        <h1>Tạo cấu hình riêng cho giáo viên</h1>
+        <p class="muted">Công cụ chạy hoàn toàn trong trình duyệt, không gửi thông tin tới máy chủ và không lưu Gmail rõ vào tệp kết quả.</p>
+        <div class="notice"><strong>Quan trọng:</strong> tạo cấu hình một lần, lưu lại an toàn và không đổi APP_ID, SCHOOL_PROFILE_ID, APP_NAMESPACE hoặc DB_NAME giữa các lần cập nhật nếu không có kế hoạch migration.</div>
+        <form id="configForm">
+          <div class="grid">
+            <div class="full"><label for="schoolName">Tên trường</label><input id="schoolName" required placeholder="TRƯỜNG THCS ..." autocomplete="organization" /></div>
+            <div><label for="schoolCode">Mã trường ngắn, không dấu</label><input id="schoolCode" required pattern="[A-Za-z0-9_-]{2,30}" placeholder="thcs-abc" /></div>
+            <div><label for="repository">Tên repository GitHub</label><input id="repository" required pattern="[A-Za-z0-9._-]{1,100}" value="tro-ly-tpt-doi-thcs" /></div>
+            <div class="full"><label for="clientId">OAuth Client ID loại Web application</label><input id="clientId" required placeholder="000000000000-....apps.googleusercontent.com" autocomplete="off" /></div>
+            <div class="full"><label for="gmail">Gmail duy nhất của giáo viên</label><input id="gmail" required type="email" placeholder="giaovien@gmail.com" autocomplete="off" /></div>
+            <div class="full"><label for="permissionId">Drive permission ID (tùy chọn, chỉ điền sau khi đã ghép và biết chính xác)</label><input id="permissionId" placeholder="Để trống ở lần thiết lập đầu" autocomplete="off" /></div>
+          </div>
+          <div class="actions"><button type="submit">Xem trước cấu hình</button><button type="button" class="secondary" id="downloadConfig" disabled>Tải app-config.js</button><button type="reset" class="secondary">Xóa biểu mẫu</button></div>
+          <div class="error" id="error" role="alert"></div>
+        </form>
+        <h2>Xem trước</h2>
+        <pre id="preview">Chưa tạo cấu hình.</pre>
+      </section>
+      <footer>Phát triển bởi: Thầy Hiếu (Giáo dục số 4.0) - Zalo: 0812806887</footer>
+    </main>
+    <script>
+      "use strict";
+      (() => {
+        const form = document.querySelector("#configForm"), preview = document.querySelector("#preview"), error = document.querySelector("#error"), downloadButton = document.querySelector("#downloadConfig");
+        let generated = "";
+        const slug = (value) => String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[đĐ]/g, "d").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40);
+        const jsString = (value) => JSON.stringify(String(value));
+        async function sha256(value) {
+          const hash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+          return [...new Uint8Array(hash)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+        }
+        form.addEventListener("submit", async (event) => {
+          event.preventDefault(); error.textContent = ""; downloadButton.disabled = true;
+          if (!form.reportValidity()) return;
+          const schoolName = document.querySelector("#schoolName").value.trim(), code = slug(document.querySelector("#schoolCode").value), repository = document.querySelector("#repository").value.trim(), clientId = document.querySelector("#clientId").value.trim(), gmail = document.querySelector("#gmail").value.trim().toLowerCase(), permissionId = document.querySelector("#permissionId").value.trim();
+          if (code.length < 2) return void (error.textContent = "Mã trường sau chuẩn hóa phải có ít nhất 2 ký tự.");
+          if (!/^[0-9A-Za-z._-]+\.apps\.googleusercontent\.com$/.test(clientId)) return void (error.textContent = "OAuth Client ID không đúng định dạng Web application.");
+          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(gmail)) return void (error.textContent = "Gmail không hợp lệ.");
+          const emailHash = await sha256(gmail), upperCode = code.replace(/-/g, "_").toUpperCase(), config = {
+            APP_VERSION: "3.1.0-rc.1", BUILD_ID: "20260814-drive-rc1", SCHEMA_VERSION: 10,
+            APP_ID: `vn.giaoducso40.tpt.thcs.${code.replace(/-/g, "_")}`,
+            SCHOOL_PROFILE_ID: `thcs-${code}-profile-001`, APP_NAMESPACE: `tpt_thcs_${code.replace(/-/g, "_")}_profile_001`, DB_NAME: `TPT_DOI_THCS_${upperCode}_DB`,
+            SCHOOL_NAME: schoolName, SCHOOL_LEVEL: "THCS", GOOGLE_CLIENT_ID: clientId,
+            EXPECTED_GOOGLE_EMAIL_SHA256: emailHash, EXPECTED_DRIVE_PERMISSION_ID: permissionId,
+            REPOSITORY_NAME: repository, BASE_PATH: "./"
+          };
+          generated = `"use strict";\n\n// Tệp sinh cục bộ; không chứa Gmail rõ, token hay client secret.\nwindow.TPT_APP_CONFIG = Object.freeze(${JSON.stringify(config, null, 2)});\n`;
+          preview.textContent = generated; downloadButton.disabled = false;
+          document.querySelector("#gmail").value = "";
+        });
+        downloadButton.addEventListener("click", () => {
+          if (!generated) return;
+          const url = URL.createObjectURL(new Blob([generated], { type: "text/javascript;charset=utf-8" })), anchor = document.createElement("a");
+          anchor.href = url; anchor.download = "app-config.js"; anchor.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+        });
+        form.addEventListener("reset", () => { generated = ""; preview.textContent = "Chưa tạo cấu hình."; error.textContent = ""; downloadButton.disabled = true; });
+      })();
+    </script>
+  </body>
+</html>

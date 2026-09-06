@@ -1,0 +1,33 @@
+{
+  "name": "Trợ lý Tổng phụ trách Đội THCS",
+  "short_name": "Trợ lý TPT Đội",
+  "description": "Quản lý công tác Đội, thi đua, hồ sơ và báo cáo trên thiết bị.",
+  "id": "./",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f7fa",
+  "theme_color": "#0b6bcb",
+  "lang": "vi",
+  "categories": ["education", "productivity"],
+  "icons": [
+    {
+      "src": "./assets/icons/tpt-doi-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/icons/tpt-doi-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./assets/icons/tpt-doi-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

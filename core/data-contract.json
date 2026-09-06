@@ -1,0 +1,37 @@
+{
+  "contract": "TPT-DATA-CONTRACT",
+  "version": 2,
+  "app_id": "vn.giaoducso40.tpt.thcs.thcs",
+  "database_name": "TPT_DOI_THCS_THCS_DB",
+  "school_profile_id": "thcs-thcs-profile-001",
+  "schema_version": 10,
+  "backup_format": "TPT-BACKUP-3",
+  "record_identity": {
+    "required": [
+      "id",
+      "school_profile_id",
+      "created_at",
+      "updated_at",
+      "revision",
+      "source"
+    ],
+    "year_scoped_aliases": ["school_year_id", "academic_year_id"],
+    "id_rule": "ID hiện có được giữ nguyên qua migration; bản ghi mới dùng UUID."
+  },
+  "backup_scopes": ["quick", "full", "academic-year"],
+  "schema_10_stores": [
+    "students",
+    "student_incidents",
+    "import_jobs",
+    "import_staging",
+    "import_mappings",
+    "import_undo_batches"
+  ],
+  "report_statuses": ["draft", "finalized"],
+  "runtime_targets": ["browser", "pwa", "tauri-or-electron-adapter"],
+  "privacy": {
+    "default_network_sync": false,
+    "analytics": false,
+    "real_school_data_in_source": false
+  }
+}

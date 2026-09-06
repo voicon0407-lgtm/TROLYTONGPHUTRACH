@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Biểu tượng Trợ lý Tổng phụ trách Đội">
+  <rect width="512" height="512" rx="112" fill="#0a3764"/>
+  <path d="M106 146c56-25 106-16 150 20v232c-44-36-94-45-150-20V146Z" fill="#eaf4ff"/>
+  <path d="M406 146c-56-25-106-16-150 20v232c44-36 94-45 150-20V146Z" fill="#d9f5e8"/>
+  <path d="M256 166v232" stroke="#0b6bcb" stroke-width="16"/>
+  <circle cx="256" cy="112" r="38" fill="#f4b41a"/>
+  <path d="m256 82 9 20 22 2-17 15 5 22-19-11-19 11 5-22-17-15 22-2 9-20Z" fill="#fff"/>
+</svg>
